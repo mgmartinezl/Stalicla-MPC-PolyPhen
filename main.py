@@ -1,23 +1,15 @@
 # -*- coding: utf-8 -*-
 
 """
-
 STALICLA
-
 MPC and pph2 annotations module (2)
-
 This module contains the functions to annotate MPC and pph2 predictions to a dataset of patients and pathways.
-
 It takes three main input files: patients and mutations, pathways and mpc official values document.
-
 Author: Gabriela Martinez - airamgabriela17@gmail.com
 Last update: September 2019
-
 """
 
-from getMPC import *
-import getpass
-getpass.getuser()
+from src.getMPC import *
 
 
 def main():
@@ -25,17 +17,13 @@ def main():
     """ Main function to execute the getMPC protocol """
 
     directory = os.path.dirname(os.path.abspath(__file__))
-    chunks = 'InputFiles/Chunks'
-    logs = 'Logs'
-    output = 'Output'
+    chunks = 'data/processed/chunks'
+    folder_output = 'reports'
+    folder_logs = 'analysis'
     dir_chunks = os.path.join(directory, chunks)
-    dir_logs = os.path.join(directory, logs)
-    dir_output = os.path.join(directory, output)
+    dir_logs = os.path.join(directory, folder_logs)
+    dir_output = os.path.join(directory, folder_output)
     chunksize = 10
-
-    create_directory(dir_logs)
-    create_directory(dir_output)
-    create_directory(dir_chunks)
 
     # Arguments parser
     args = create_arg_parser_mpc()

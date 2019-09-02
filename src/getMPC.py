@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
 
 """
-
 STALICLA
 MPC and pph2 annotations module (1)
-
 This module contains the functions to annotate MPC and pph2 predictions to a dataset of patients and pathways.
-
 It takes three main input files: patients and mutations, pathways and mpc official values document.
-
 Author: Gabriela Martinez - airamgabriela17@gmail.com
 Last update: September 2019
-
 """
 
 import pandas as pd
@@ -574,6 +569,9 @@ def logging_info_mpc(args, folderpath, folderpath2):
                  "-patient: " + none_to_str(args['patient']) + '\n' +
                  "-mutation: " + none_to_str(args['mutation']) + '\n' +
                  is_base)
+
+    print("---")
+    print("Protocol successfully generated!")
 
 
 """    
