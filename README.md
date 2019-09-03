@@ -1,8 +1,8 @@
 MPC-PolyPhen
 ==============================
 
-Python module to get MPC values and PolyPhen label predictions for a set of patients and mutations.
-*Last update: Sep 02, 2019*
+Python module to get MPC values and PolyPhen label predictions for a set of patients and mutations. \
+*Last update: Sep 03, 2019*
 
 Project Organization
 ------------
@@ -40,23 +40,23 @@ of patients and mutations.
 
 ### Interface
 
-This project contains a module called [getMPC.py](https://github.com/mgmartinezl/MPC-pph2/blob/master/getMPC.py), 
-which contains a set of functions integrated and called by the [main-getMPC.py](https://github.com/mgmartinezl/MPC-pph2/blob/master/main-getMPC.py) 
+This project contains a module called [getMPC.py](https://github.com/mgmartinezl/Stalicla-MPC-PolyPhen/blob/master/src/getMPC.py), 
+which contains a set of functions integrated and called by the [main.py](https://github.com/mgmartinezl/MPC-pph2/blob/master/main.py) 
 script. 
 
 #### Positional parameters
 
 * **inputFile:** it is mandatory to specify the absolute path to the input file containing the 
 patient mutations.
-    - Example: ```$ python main-getMPC.py /home/Docs/mutations-file.txt```
+    - Example: ```$ python3 main.py ~/data/raw/original-mutations-file.txt```
 * **pathwaysDirectory:**  it is mandatory to specify the absolute path to the directory that 
 contains the pathway files with gene annotations.
-    - Example: ```$ python main-getMPC.py /home/Docs/mutations-file.txt /home/pathways/```
+    - Example: ```$ python3 main.py ~/data/raw/original-mutations-file.txt /data/raw/pathways/```
 * **inputMPC:**  it is mandatory to specify the absolute path to the directory that 
 contains the MPC official values file. It is also possible to set a path to a directory that
 contains chunks of the original file when it is partitioned.
-    - Example 1: ```$ python main-getMPC.py /home/Docs/mutations-file.txt /home/pathways/ home/path-to-mpc-official-values-file```
-    - Example 2: ```$ python main-getMPC.py /home/Docs/mutations-file.txt /home/pathways/ home/path-to-mpc-official-values-directory```
+    - Example 1: ```$ python3 main.py ~/data/raw/original-mutations-file.txt /data/raw/pathways/ path-to-mpc-official-values-file```
+    - Example 2: ```$ python3 main.py ~/data/raw/original-mutations-file.txt /data/raw/pathways/ path-to-mpc-official-values-directory```
 
 **IMPORTANT:** if an MPC official values file is provided, it must be a comma separated file.
 
@@ -66,9 +66,9 @@ contains chunks of the original file when it is partitioned.
 mutations file. If no setting is provided,
 all available pathways will be extracted by default.
     - Example 1: it will run only for pathway R-HSA-69620 \
-    ```$ python main-getMPC.py /home/Docs/mutations-file.txt /home/pathways/ -pathway R-HSA-69620 ```
+    ```$ python3 main.py ~/data/raw/original-mutations-file.txt /data/raw/pathways/ -pathway R-HSA-69620 ```
     - Example 2: it will run for all possible pathways \
-    ```$ python main-getMPC.py /home/Docs/mutations-file.txt /home/pathways/ ```    
+    ```$ python3 main.py ~/data/raw/original-mutations-file.txt /data/raw/pathways/ ```    
     
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; For more than one pathway, you can specify one of the following: \
 \
@@ -81,7 +81,7 @@ all available pathways will be extracted by default.
 mutations file. If no setting is provided,
 all available genes will be extracted by default.
     - Example: it will run only for gene CTR9 \
-    ```$ python main-getMPC.py /home/Docs/mutations-file.txt /home/pathways/ -gene CTR9 ```
+    ```$ python3 main.py ~/data/raw/original-mutations-file.txt /data/raw/pathways/ -gene CTR9 ```
    
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; For more than one gene, you can specify one of the following: \
 \
@@ -93,7 +93,7 @@ all available genes will be extracted by default.
 * **-patient:** optional argument to process only specific patient IDs. If no setting is provided,
 all available patients will be extracted by default.
     - Example: it will run only for patient with ID 1 \
-    ```$ python main-getMPC.py /home/Docs/mutations-file.txt /home/pathways/ -patient Patient_1 ```
+    ```$ python3 main.py ~/data/raw/original-mutations-file.txt /data/raw/pathways/ -patient Patient_1 ```
    
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; For more than one patient ID, you can specify one of the following: \
 \
@@ -105,7 +105,7 @@ all available patients will be extracted by default.
 * **-mutation:** optional argument to process only specific mutations. If no setting is provided,
 all available consequences will be processed by default.
     - Example: it will run only for mutations of type 'missense_variant' \
-    ```$ python main-getMPC.py /home/Docs/mutations-file.txt /home/pathways/ -mutation missense_variant```
+    ```$ python3 main.py ~/data/raw/original-mutations-file.txt /data/raw/pathways/ -mutation missense_variant```
    
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; For more than one mutation, you can specify one of the following: \
 \
@@ -116,36 +116,35 @@ all available consequences will be processed by default.
 
 **Note:** help() is available for all the parameters via the command line. 
 
+
 ### Input files
-A sample of the file required by the first positional argument (the input file containing mutations and patients)
-can be found in the folder **InputFiles**. For direct access, click [here.](https://github.com/mgmartinezl/MPC-pph2/blob/master/InputFiles/original-mutations-file.txt) 
+A sample of the file required by the first argument (the input file containing mutations and 
+patients) can be found in the folder **data/raw** of the repo. The name of the file is
+ **original-mutations-file.txt**. Also, a file called **dummy 
 
-Similarly, in the **InputFiles** folder, a sample of a directory containing pathways can be found, which is a mandatory
-parameter for _pathwaysDirectory_ entry. See it directly [here.](https://github.com/mgmartinezl/MPC-pph2/tree/master/InputFiles/Pathways)
+Similarly, in the [**data/raw/pathways**] folder, a sample of a directory containing pathways 
+can be found, which is a mandatory parameter for _pathwaysDirectory_ entry. 
 
-Additional example text files to filter 
-[genes](https://github.com/mgmartinezl/MPC-pph2/tree/master/InputFiles/my-file-containing-genes.txt), 
-[patients](https://github.com/mgmartinezl/MPC-pph2/tree/master/InputFiles/my-file-containing-patients.txt) and 
-[mutations](https://github.com/mgmartinezl/MPC-pph2/tree/master/InputFiles/my-file-containing-mutations.txt) can be found 
-in the folder as well.
+Additional example text files to filter can be found in the folder **data/raw/filters**.
 
 ## Running tests
 
-In the folders [Logs]() and 
-[Output](), three different running
-examples can be found. Each of them generates a log containing the parameters set to run the
-program, as well as the desired output.
+In the folder [reports](https://github.com/mgmartinezl/Stalicla-MPC-PolyPhen/tree/master/reports), 
+one example of the output generated by the script can be found, as well as a log containing the 
+parameters set to run the program. To see the logs please visit **~/MPC-PolyPhen/analysis**.
 
 ## How to run this script
 
-The scripts [getMPC.py](https://github.com/mgmartinezl/MPC-pph2/blob/master/getMPC.py), 
- and [main-getMPC.py](https://github.com/mgmartinezl/MPC-pph2/blob/master/main-getMPC.py) 
- are written in Python 3, which uses up-to-date libraries for this version as well.
+The scripts getMPC.py, and main.py are written in Python 3, 
+which uses up-to-date libraries for this version as well.
+ 
+To run the main module in a linux environment, simply call the script and the
+arguments it needs:
  
 To run the main module in a linux environment, simply call the script and the
 arguments it needs:
 
-```python3 main-getMPC.py inputFile pathwaysDirectory inputMPC -pathway -gene -patient -mutation ```
+```python3 main.py inputFile pathwaysDirectory inputMPC -pathway -gene -patient -mutation ```
 
 For any additional information, contact me: 
 
