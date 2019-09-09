@@ -16,43 +16,43 @@ def main():
 
     """ Main function to execute the getMPC protocol """
 
-    directory = os.path.dirname(os.path.abspath(__file__))
-    chunks = 'data/processed/chunks'
-    folder_output = 'reports'
-    folder_logs = 'analysis'
-    dir_chunks = os.path.join(directory, chunks)
-    dir_logs = os.path.join(directory, folder_logs)
-    dir_output = os.path.join(directory, folder_output)
-    chunksize = 10
-
     # Arguments parser
     args = create_arg_parser_mpc()
+
+    directory = os.path.dirname(os.path.abspath(__file__))
+
+    chunks = 'data/processed/chunks'
+    dir_chunks = os.path.join(directory, chunks)
+    chunk_size = 10
+
+    default_folder_output = 'analysis'
+    dir_default_folder_output = os.path.join(directory, default_folder_output)
+    dir_default_logs = os.path.join(directory, default_folder_output)
+
+    if args['path'] is not None:
+        dir_output = args['path']
+        dir_logs = args['path']
+    else:
+        dir_output = dir_default_folder_output
+        dir_logs = dir_default_logs
 
     # ------ Read patients and mutations ------ #
 
     # Input files reading, filtering and cleaning
     patients = drop_na(read_mutations(args['inputFile']))
-    pathways = drop_na(read_pathways(args['pathwaysDirectory'], args['pathway']))
 
-    # Joining data: patient mutations and pathways
-    joint_data = join_input_data(patients, pathways)
-
-    # Create raw base matrix
-    base_matrix = create_base_matrix(joint_data)
-
-    # Process patients data
-    patients = process_patients(base_matrix)
+    patients = create_key(patients)
 
     # ------ Filtering data ------ #
 
     # Restrict analysis to specific patients
-    patients = analyze_patients(patients, args['patient'])
+    patients = filter_patients(patients, args['patient'])
 
     # Restrict analysis to specific genes
-    patients = analyze_genes(patients, args['gene'])
+    patients = filter_genes(patients, args['gene'])
 
-    # Restrict analysis to specific mutations
-    patients = analyze_mutations(patients, args['mutation'])
+    # Restrict analysis to specific consequences
+    patients = filter_consequences(patients, args['csq'])
 
     # ------ MPC annotations ------ #
 
@@ -60,24 +60,25 @@ def main():
     # Join MPC, pph2 and adjusted consequence to patients
     # Also, a unique ID is created for every patient and mutation
 
-    patients_mpc = blocks_mpc(args['inputMPC'], dir_chunks, chunksize, patients)
+    patients_mpc = blocks_mpc(args['inputMPC'], dir_chunks, chunk_size, patients)
     patients_mpc_pph2 = annotate_pph2_pred(patients_mpc)
-    patients_mpc_pph2_adj = create_id(annotate_adj_cons(patients_mpc_pph2))
+    patients_mpc_pph2_adj = format_df(create_id(annotate_adj_cons(patients_mpc_pph2)))
+
+    # ------ Pos-annotations filtering ------ #
+
+    # Restrict analysis to specific values of pph2 predictions
+    data = filter_PolyPhen(patients_mpc_pph2_adj, args['pph2'])
+
+    # Restrict analysis to specific values of MPC
+    data = filter_mpc(data, args['mpc_gt'])
+
+    # Restrict analysis to specific values of adjusted consequence
+    data = filter_adj_consequence(data, args['adj_csq'])
 
     # Export annotated patients
-    patients_mpc_pph2_adj.to_csv(
-        os.path.join(dir_output, 'MPC-pph2-annotations-{}.csv'.format(strftime("%Y-%m-%d_%H꞉%m꞉%S", gmtime()))),
-        index=False)
-
-    # ------ MPC + binary matrix for clustering part I ------#
-
-    # Compute binary variables from intermediate matrix from the PBPM protocol
-    binary_features = compute_binary(joint_data)
-    joint_binary = join_dfs(patients_mpc_pph2_adj, binary_features)
-
-    # Export annotated patients with binary variables
-    joint_binary.to_csv(os.path.join(dir_output, 'MPC-pph2-pathways-annotations-{}.csv'.format(
-        strftime("%Y-%m-%d_%H꞉%m꞉%S", gmtime()))), index=False)
+    data.to_csv(os.path.join(dir_output,
+                'MPC-pph2-annotations-{}.csv'.format(strftime("%Y-%m-%d_%H꞉%m꞉%S", gmtime()))),
+                index=False)
 
     # ------ Logging ------ #
 
