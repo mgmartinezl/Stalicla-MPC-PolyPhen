@@ -601,7 +601,7 @@ def logging_info_mpc(args, folderpath, folderpath2):
     """
 
     is_base = "Annotated MPC and PolyPhen2 data downloaded at: {}".format(folderpath2)
-    log_filename = os.path.join(folderpath, 'logINFO_{}.log'.format(strftime("%Y-%m-%d_%H꞉%m꞉%S", gmtime())))
+    log_filename = os.path.join(folderpath, 'logINFO_{}.log'.format(local_time.strftime("%Y-%m-%d_%H꞉%M꞉%S")))
     logging.basicConfig(filename=log_filename, level=logging.INFO)
 
     logging.info('MPC-PolyPhen protocol started generation on: ' + local_time.strftime("%Y-%m-%d_%H꞉%M꞉%S"))
