@@ -92,7 +92,7 @@ To filter by more than one gene, you can specify one of the following: \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    1. A subset of genes separated by comma (without spaces):  \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    ```-g CTR9,NOCL2 ``` \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    2. A txt tab delimited file with no headers and the desired genes to filter written in the first column: \
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    ```-g ~/PBPM/data/raw/filters/my-file-containing-genes.txt``` 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    ```-g ~/data/raw/filters/my-file-containing-genes.txt``` 
 
 * **[-id PATIENT, --patient PATIENT, --patients PATIENT]:** 
 optional argument to filter specific patient IDs. 
