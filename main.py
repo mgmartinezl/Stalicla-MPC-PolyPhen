@@ -39,9 +39,7 @@ def main():
     # ------ Read patients and mutations ------ #
 
     # Input files reading, filtering and cleaning
-    patients = drop_na(read_mutations(args['inputFile']))
-
-    patients = create_key(patients)
+    patients = create_key(clean_missense(drop_na(read_mutations(args['inputFile']))))
 
     # ------ Filtering data ------ #
 
@@ -76,9 +74,7 @@ def main():
     data = filter_adj_consequence(data, args['adj_csq'])
 
     # Export annotated patients
-    data.to_csv(os.path.join(dir_output,
-                'MPC-pph2-annotations-{}.csv'.format(strftime("%Y-%m-%d_%H꞉%m꞉%S", gmtime()))),
-                index=False)
+    export_annotations(data, dir_output)
 
     # ------ Logging ------ #
 

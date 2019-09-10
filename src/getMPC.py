@@ -15,24 +15,10 @@ import argparse
 import os
 from pathlib import Path
 import logging
-from datetime import datetime
+import datetime
 import getpass
 
-
-def create_directory(folderpath):
-
-    """ Creates a folder.
-
-    Parameters:
-        folderpath (str):The path to the folder that will be create.
-
-    Returns:
-        create_directory(folderpath):The created folder in the specified path.
-
-    """
-
-    if not os.path.exists(folderpath):
-        os.makedirs(folderpath)
+local_time = datetime.datetime.now()
 
 
 def drop_na(df):
@@ -55,11 +41,13 @@ def drop_na(df):
 
 def str_to_int(s):
 
-    """ Function to convert a String object to integer 0
+    """ Function to convert a String object to integer 0.
+
     Parameters:
         s (None): a None Python object.
+
     Returns:
-        none_to_str(s): a int Python object.
+        none_to_str(s): an integer Python object.
     """
 
     import numbers
@@ -69,6 +57,26 @@ def str_to_int(s):
         s = convert(s)
         return s
     if isinstance(s, numbers.Numbers):
+        return s
+
+
+def none_to_str(s):
+
+    """ Function to convert a None object to string.
+
+    Parameters:
+        s (None): a None Python object.
+
+    Returns:
+        none_to_str(s): a string Python object.
+
+    """
+
+    convert = lambda i: i or ''
+    if s is None:
+        s = convert(s)
+        return s
+    if s is not None:
         return s
 
 
@@ -350,21 +358,37 @@ def filter_adj_consequence(df, adj_cons):
 
 def create_key(df):
 
+    """ Creates a single key field for every mutation found in a file.
+
+    Parameters:
+        df (pandas dataframe): matrix containing the mutations defined by Chr | Pos | Ref | Alt
+
+    Returns:
+        create_key(df): matrix with a new key column for every mutation.
+
+    """
+
     df['key'] = df['Chr'].map(str) + "|" + df['Position'].map(str) + "|" + df['Ref'].map(str) + "|" + df['Alt'].map(str)
     return df
 
 
-def partition_mpc(dir_mpc, dir_chunks, chunksize):
+def partition_mpc(dir_mpc, dir_chunks, chunk_size):
 
-    """
+    """ Function to read big file with MPC official values.
+    Partitions MPC 16GB file into X lines chunks.
 
-    Function to read big file with MPC annotations.
-    Partition MPC 16GB file into X lines chunks.
+    Parameters:
+        dir_mpc(str, path): directory where the original MPC large file is located.
+        dir_chunks (str, path): directory where chunks of the big file will be created and stored.
+        chunk_size (integer): number of lines to include in each chunk.
+
+    Returns:
+        partition_mpc(dir_mpc, dir_chunks, chunk_size): folder with chunks of MPC values.
 
     """
 
     i = 1
-    for chunk in pd.read_csv(dir_mpc, header=0, chunksize=chunksize,
+    for chunk in pd.read_csv(dir_mpc, header=0, chunksize=chunk_size,
                              usecols=["chrom", "pos", "ref", "alt", "PolyPhen", "MPC"], sep='\t'):
         chunk.to_csv(os.path.join(dir_chunks, "chunk_{}.csv".format(i)), index=False)
         i = i + 1
@@ -372,9 +396,14 @@ def partition_mpc(dir_mpc, dir_chunks, chunksize):
 
 def annotate_mpc(dir_chunks, patients):
 
-    """
+    """ Function to join MPC chunks with patient records.
 
-    Function to join mpc chunks with patients records.
+    Parameters:
+        dir_chunks (str, path): folder with chunks of MPC values.
+        patients (pandas dataframe): patients dataframe already read.
+
+    Returns:
+        annotate_mpc(): patient records with annotated MPC official values.
 
     """
 
@@ -398,9 +427,44 @@ def annotate_mpc(dir_chunks, patients):
     return final_df
 
 
+def blocks_mpc(path, dir_chunks, chunk_size, df):
+
+    """ Function to process the MPC official values entry.
+    If it is a file, it will partition it (input file must be a txt) to then annotate values to patients.
+    If it is a folder containing chunks of values, the function will iterate them while annotating information.
+    This function will call the function annotate_mpc(dir_chunks, patients) on the input provided.
+
+    Parameters:
+        path (str, path):
+        dir_chunks (str, path):
+        chunk_size (integer):
+        df (pandas dataframe):
+
+    Returns:
+        blocks_mpc(path, dir_chunks, chunk_size, df): patient records with annotated MPC official values.
+
+    """
+
+    if os.path.isfile(path):
+        partition_mpc(path, dir_chunks, chunk_size)
+        patients_mpc = annotate_mpc(dir_chunks, df)
+        return patients_mpc
+    elif os.path.isdir(path):
+        patients_mpc = annotate_mpc(path, df)
+        return patients_mpc
+
+
 def annotate_pph2_pred(df):
 
-    """ Function to annotate adjusted consequence """
+    """ Function to annotate PolyPhen prediction label to a dataframe of patients.
+
+    Parameters:
+        df (pandas dataframe): patients dataframe with annotated MPC official values and PolyPhen information.
+
+    Returns:
+        annotate_pph2_pred(df): patients dataframe with annotated PolyPhen prediction label
+
+    """
 
     df['pph2_prediction'] = df.apply(lambda row: row['PolyPhen'].replace('(', ' ').replace(')', '').split(' ')[0], axis=1)
     df['pph2_value'] = df.apply(lambda row: row['PolyPhen'].replace('(', ' ').replace(')', '').split(' ')[1], axis=1)
@@ -409,6 +473,16 @@ def annotate_pph2_pred(df):
 
 
 def adj_consequence(row):
+
+    """ Function to return an adjusted consequence for a patient according to a set of conditions.
+
+    Parameters:
+        row (pandas dataframe row): every row of the patients dataframe with annotated MPC official values.
+
+    Returns:
+        adj_consequence(row): patients with annotated adjusted consequence.
+
+    """
 
     if row['consequence'] == 'missense_variant' and (row['pph2_prediction'] == 'probably damaging' or str_to_int(row['MPC']) >= 2):
         return 'Missense3'
@@ -423,19 +497,50 @@ def adj_consequence(row):
 
 def annotate_adj_cons(df):
 
-    """ Function to annotate adjusted consequence """
+    """ Function to annotate adjusted consequence based on the adj_consequence(row) function.
+
+    Parameters:
+        df (pandas dataframe): patients dataframe with annotated MPC official values.
+
+    Returns:
+        adj_consequence(row): patients with annotated adjusted consequence.
+
+    """
 
     df['adj_cons'] = df.apply(adj_consequence, axis=1)
     return df
 
 
+def clean_missense(df):
+
+    """ Function to drop missense records that do not hold MPC or PolyPhen prediction.
+
+    Parameters:
+        df (pandas dataframe): patients dataframe with consequences and PolyPhen prediction labels.
+
+    Returns:
+        clean_missense(df): patients dataframe witn valid missense records.
+
+    """
+
+    df = df.drop(df[(df.consequence == 'missense_variant') & (df.pph2_prediction == 'unknown')
+                    & (df.pph2_value == 0)].index)
+    df = df.drop(df[(df.consequence == 'missense_variant') & (df.MPC.isnull())].index)
+    return df
+
+
 def create_id(df):
 
-    # Drop missense records that do not hold MPC or PolyPhen prediction
-    df = df.drop(df[(df.consequence == 'missense_variant') & (df.pph2_prediction == 'unknown') & (df.pph2_value == 0)].index)
-    df = df.drop(df[(df.consequence == 'missense_variant') & (df.MPC.isnull())].index)
+    """ Function to create a unique id for every patient and mutation.
 
-    # Create an id (we have duplicated patients)
+    Parameters:
+        df (pandas dataframe): patients dataframe with mutations.
+
+    Returns:
+        create_id(df): patients dataframe with mutations and unique id per register patient | mutation.
+
+    """
+
     df['_id'] = df.index + 1
     df = df.drop_duplicates(subset='key')
     return df
@@ -443,7 +548,16 @@ def create_id(df):
 
 def format_df(df):
 
-    # Reorder data and change some names
+    """ Function to change column names and order.
+
+    Parameters:
+        df (pandas dataframe): patients dataframe with mutations and annotated data.
+
+    Returns:
+        format_df(df): pandas dataframe with columns names changed.
+
+    """
+
     df = df.rename(columns={"child_id": "Child_id", "Chr": "Chr", "Position": "Pos", "Ref": "Ref", "Alt": "Alt",
                             "consequence": "Consequence", "HGNC_symbol": "HGNC_Symbol", "key": "Key", "MPC": "MPC",
                             "pph2_prediction": "PolyPhen_pred", "pph2_value": "PolyPhen_Value",
@@ -453,35 +567,23 @@ def format_df(df):
     return df
 
 
-def blocks_mpc(path, dir_chunks, chunk_size, df):
+def export_annotations(df, folderpath):
 
-    if os.path.isfile(path):
-        partition_mpc(path, dir_chunks, chunk_size)
-        patients_mpc = annotate_mpc(dir_chunks, df)
-        return patients_mpc
-    elif os.path.isdir(path):
-        patients_mpc = annotate_mpc(path, df)
-        return patients_mpc
-
-
-def none_to_str(s):
-
-    """ Function to convert a None object to string.
+    """ Exports the MPC annotated dataframe of patients.
 
     Parameters:
-        s (None): a None Python object.
+        df (pandas dataframe): dataframe to be exported as a csv file.
+        folderpath (str, path): path where the final csv will be stored.
 
     Returns:
-        none_to_str(s): a string Python object.
+        export_annotations(df, folderpath): annotated dataset of patients.
 
     """
 
-    convert = lambda i: i or ''
-    if s is None:
-        s = convert(s)
-        return s
-    if s is not None:
-        return s
+    df.to_csv(os.path.join(folderpath,
+                           'MPC-pph2-annotations-{}.csv'.format(local_time.strftime("%Y-%m-%d_%H꞉%M꞉%S"))),
+                           index=False)
+    return df
 
 
 def logging_info_mpc(args, folderpath, folderpath2):
@@ -491,7 +593,7 @@ def logging_info_mpc(args, folderpath, folderpath2):
     Parameters:
         args (dictionary): parsed arguments from command line.
         folderpath (str): destination of the info log.
-        folderpath2 (str): folder where the annotated patients matrix is downloaded.
+        folderpath2 (str): folder where the annotated patients file is downloaded.
 
     Returns:
         logging_info(args, folderpath): info log.
@@ -502,7 +604,7 @@ def logging_info_mpc(args, folderpath, folderpath2):
     log_filename = os.path.join(folderpath, 'logINFO_{}.log'.format(strftime("%Y-%m-%d_%H꞉%m꞉%S", gmtime())))
     logging.basicConfig(filename=log_filename, level=logging.INFO)
 
-    logging.info('MPC-PolyPhen protocol started generation on: ' + datetime.now().strftime('%d-%m-%Y %H:%M:%S'))
+    logging.info('MPC-PolyPhen protocol started generation on: ' + local_time.strftime("%Y-%m-%d_%H꞉%M꞉%S"))
     logging.info('Process initiated by the user ' + getpass.getuser())
     logging.info('\n' + '\n' +
                  "Protocol successfully generated! " + '\n' + '\n' +
