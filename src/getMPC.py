@@ -523,7 +523,7 @@ def clean_missense(df):
 
     """
 
-    df = df.drop(df[(df.consequence == 'missense_variant') & (df.pph2_prediction == 'unknown')
+    df = df.drop(df[(df.consequence == 'missense_variant') & (df.PolyPhen_pred == 'unknown')
                     & (df.pph2_value == 0)].index)
     df = df.drop(df[(df.consequence == 'missense_variant') & (df.MPC.isnull())].index)
     return df

@@ -39,7 +39,7 @@ def main():
     # ------ Read patients and mutations ------ #
 
     # Input files reading, filtering and cleaning
-    patients = create_key(clean_missense(drop_na(read_mutations(args['inputFile']))))
+    patients = create_key(drop_na(read_mutations(args['inputFile'])))
 
     # ------ Filtering data ------ #
 
